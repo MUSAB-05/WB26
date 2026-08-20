@@ -60,7 +60,6 @@ jobs:
           curl --fail --silent --show-error --location --retry 3 \
             "$BASE/assets/team-logo.png" -o site/assets/team-logo.png || true
 
-          printf '%s\n' 'wb.rweb.site' > site/CNAME
           touch site/.nojekyll
 
           test -s site/index.html
