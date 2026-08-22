@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta id="themeColorMeta" name="theme-color" content="#252630" />
+  <meta name="description" content="Westfold Benchwarmers training attendance" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="WB" />
+  <script>
+    try { document.documentElement.dataset.theme = localStorage.getItem('wb-theme') || 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }
+  </script>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon.svg" />
+  <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./responsive.css" />
+  <title>Westfold Benchwarmers</title>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo-wrap"><img id="teamLogo" class="team-logo" src="./assets/team-logo.png" alt="Westfold Benchwarmers logo" /></div>
+        <div class="brand-copy"><h1 id="teamName">Westfold Benchwarmers</h1><p class="subtitle">Training attendance</p></div>
+      </div>
+      <div class="top-actions">
+        <span id="liveBadge" class="live-badge" title="Shared board refreshes automatically"><i></i><span>Live</span></span>
+        <button id="themeBtn" class="icon-btn theme-btn" type="button" title="Switch to light mode" aria-label="Switch to light mode">💡</button>
+        <button id="installBtn" class="icon-btn" type="button" hidden title="Install app">＋ App</button>
+        <button id="notifyBtn" class="icon-btn" type="button" title="Enable notifications">🔔</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="setupNotice" class="notice-card" hidden><strong>Private team link needed</strong><p>Open the Westfold Benchwarmers team link you received.</p></section>
+
+      <section class="schedule-toolbar" aria-label="Schedule navigation">
+        <button id="prevWeeksBtn" class="nav-btn" type="button">← Previous</button>
+        <div class="schedule-range"><span class="range-kicker">Schedule</span><strong id="rangeLabel">Weeks</strong></div>
+        <button id="nextWeeksBtn" class="nav-btn" type="button">Next →</button>
+      </section>
+
+      <section id="weeksBoard" class="weeks-board" aria-live="polite"></section>
+
+      <section class="legend-card">
+        <span><b class="dot dot-yes"></b> Coming</span>
+        <span><b class="dot dot-pending"></b> Pending</span>
+        <span><b class="dot dot-no"></b> Not coming</span>
+        <span><b class="dot dot-guest"></b> Guests</span>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="./config.js"></script>
+  <script src="./team-key-bootstrap.js"></script>
+  <script src="./ios-install.js"></script>
+  <script src="./theme-toggle.js"></script>
+  <script src="./logo-theme.js"></script>
+  <script src="./mantle-adapter.js"></script>
+  <script src="./range-label-fix.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Westfold Benchwarmers player list
+# One player per line. Lines starting with # are ignored.
+# Example:
+Ask
+Rebekka
+Emil
+Dina
+Mustafa
+Lene
+Thor
+Jørgen
+Thoma G.
+Helene
+Odd
+Monika
+Fetter
