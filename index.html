@@ -15,6 +15,7 @@
   <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./responsive.css" />
+  <link rel="stylesheet" href="./pride.css" />
   <title>Westfold Benchwarmers</title>
 </head>
 <body>
@@ -48,6 +49,15 @@
         <span><b class="dot dot-pending"></b> Pending</span>
         <span><b class="dot dot-no"></b> Not coming</span>
         <span><b class="dot dot-guest"></b> Guests</span>
+      </section>
+
+      <section class="pride-card" aria-labelledby="prideTitle">
+        <div class="pride-header">
+          <div><span class="pride-kicker">Season stats</span><h2 id="prideTitle">🏆 Wall of Pride</h2></div>
+          <p id="prideSummary">Attendance will appear after completed training weeks.</p>
+        </div>
+        <div id="prideList" class="pride-list" aria-live="polite"></div>
+        <p class="pride-note">A week counts when you were marked Coming for the training that went ahead.</p>
       </section>
     </main>
   </div>
