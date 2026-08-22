@@ -1,4 +1,4 @@
-const CACHE='westfold-benchwarmers-v12';
+const CACHE='westfold-benchwarmers-v13';
 const SHELL=['./','./index.html','./styles.css','./responsive.css','./pride.css','./app.js','./ios-install.js','./theme-toggle.js','./logo-theme.js','./mantle-adapter.js','./range-label-fix.js','./team-key-bootstrap.js','./config.js','./team-config.json','./players.txt','./manifest.webmanifest','./icons/icon.svg','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
