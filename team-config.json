@@ -4,7 +4,7 @@
   "timezone": "Europe/Oslo",
   "trainingTime": "19:00",
   "cutoffTime": "21:00",
-  "voteReminderTime": "19:00",
+  "voteReminderTime": "10:00",
   "trainingReminderTime": "10:00",
   "weeksVisible": 1
 }
