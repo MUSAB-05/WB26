@@ -5,6 +5,7 @@
 .pride-kicker{display:block;color:var(--brand-bright);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em}
 .pride-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}
 .pride-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:58px;padding:10px 12px;border:1px solid var(--border);border-radius:15px;background:var(--surface-3)}
+.pride-row:nth-child(n+6){display:none}
 .pride-rank{display:grid;place-items:center;width:34px;height:34px;font-size:1.25rem;border-radius:11px;background:var(--surface-2)}
 .pride-name{min-width:0;font-weight:750;overflow-wrap:anywhere}
 .pride-count{display:flex;align-items:baseline;gap:4px;white-space:nowrap;color:var(--muted)}
