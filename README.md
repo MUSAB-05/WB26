@@ -1,7 +1,9 @@
-# WB web host
+# Westfold Benchwarmers — WB26
 
-Hosting shell for the Westfold Benchwarmers PWA.
+Canonical GitHub Pages host for the Westfold Benchwarmers PWA.
 
-The application source remains in the private `MUSAB-05/Westfold-Benchwarmers` repository. This repository only mirrors the current published frontend for GitHub Pages.
+Live site: `https://musab-05.github.io/WB26/`
 
-The host is designed to work directly on GitHub Pages without an external URL shortener or third-party custom-domain registry.
+The live frontend is maintained directly on the `gh-pages` branch. The old Sitebin mirror workflow has been retired, so future website changes go straight to GitHub Pages.
+
+Shared attendance data and push delivery still use the private `MUSAB-05/Westfold-Benchwarmers` backend repository and MantleDB.
