@@ -10,7 +10,8 @@ const el = {
   teamName:$('teamName'), teamLogo:$('teamLogo'), setupNotice:$('setupNotice'),
   installBtn:$('installBtn'), notifyBtn:$('notifyBtn'),
   prevWeeksBtn:$('prevWeeksBtn'), nextWeeksBtn:$('nextWeeksBtn'),
-  rangeLabel:$('rangeLabel'), weeksBoard:$('weeksBoard'), toast:$('toast'), liveBadge:$('liveBadge')
+  rangeLabel:$('rangeLabel'), weeksBoard:$('weeksBoard'), toast:$('toast'), liveBadge:$('liveBadge'),
+  prideList:$('prideList'), prideSummary:$('prideSummary')
 };
 
 let state = null;
@@ -21,6 +22,7 @@ let staticConfig = {
 };
 let configuredPlayers = [];
 let groupStart = 0;
+let planningFloor = 0;
 let installPrompt = null;
 let mutationsInFlight = 0;
 let refreshInFlight = false;
@@ -50,7 +52,8 @@ function timeMin(t='00:00') { const [h,m]=String(t).split(':').map(Number); retu
 function localNow() {
   const parts=new Intl.DateTimeFormat('en-GB',{timeZone:staticConfig.timezone||'Europe/Oslo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
   const g=t=>parts.find(p=>p.type===t)?.value;
-  return {date:`${g('year')}-${g('month')}-${g('day')}`,minutes:Number(g('hour'))*60+Number(g('minute'))};
+  const date=`${g('year')}-${g('month')}-${g('day')}`;
+  return {date,minutes:Number(g('hour'))*60+Number(g('minute')),weekday:new Date(`${date}T12:00:00Z`).getUTCDay()};
 }
 function fmtDate(dateIso) {
   return new Intl.DateTimeFormat('en-GB',{timeZone:'UTC',weekday:'short',day:'numeric',month:'short'}).format(new Date(`${dateIso}T12:00:00Z`));
@@ -114,14 +117,18 @@ function applyStaticConfig() {
   recalc();
 }
 function chooseInitialGroup() {
-  if(!state?.weeks?.length){groupStart=0;return;}
-  const today=localNow().date,i=state.weeks.findIndex(w=>w.friday_date>=today),visible=Math.max(1,Number(staticConfig.weeksVisible||2));
-  groupStart=Math.max(0,i<0?Math.max(0,state.weeks.length-visible):i);
+  if(!state?.weeks?.length){groupStart=planningFloor=0;return;}
+  const now=localNow(),weekend=now.weekday===6||now.weekday===0;
+  let i=state.weeks.findIndex(w=>weekend?w.thursday_date>now.date:w.friday_date>=now.date);
+  if(i<0)i=Math.max(0,state.weeks.length-1);
+  planningFloor=i;
+  groupStart=i;
 }
 function fingerprint(nextState) {
   const responses=(nextState.responses||[]).map(r=>`${r.session_id}:${r.player_id}:${r.response}`).sort();
   const guests=Object.entries(nextState.guests||{}).sort();
-  return JSON.stringify([responses,guests]);
+  const weeks=(nextState.weeks||[]).map(w=>`${w.id}:${w.thursday_date}:${w.friday_date}`).sort();
+  return JSON.stringify([responses,guests,weeks]);
 }
 async function fetchState() {
   const {data,error}=await db.rpc('get_team_state',{p_token:token});
@@ -177,13 +184,50 @@ function renderWeek(w) {
     <p class="table-tip">Thursday has priority. Guests count toward the minimum.</p>
   </article>`;
 }
+function actualTrainingSession(w) {
+  const th=state.sessions.find(s=>s.week_id===w.id&&s.kind==='thursday');
+  const fr=state.sessions.find(s=>s.week_id===w.id&&s.kind==='friday');
+  if(!th||!fr)return null;
+  if(th.status==='confirmed')return th;
+  if(th.status==='cancelled'&&fr.status==='confirmed')return fr;
+  return null;
+}
+function sessionFinished(session) {
+  const now=localNow();
+  if(now.date>session.session_date)return true;
+  if(now.date<session.session_date)return false;
+  return now.minutes>=timeMin(staticConfig.trainingTime||'19:00');
+}
+function prideStats() {
+  const completed=[];
+  for(const w of state.weeks) {
+    const session=actualTrainingSession(w);
+    if(session&&sessionFinished(session))completed.push({week:w,session});
+  }
+  const rows=state.players.filter(p=>p.active!==false).map((p,i)=>({
+    id:p.id,name:p.name,sort:Number(p.sort_order??i),
+    attended:completed.reduce((n,x)=>n+(responseFor(p.id,x.session.id)==='coming'?1:0),0)
+  })).sort((a,b)=>b.attended-a.attended||a.sort-b.sort||a.name.localeCompare(b.name));
+  let last=null,rank=0;
+  rows.forEach((r,i)=>{if(r.attended!==last){rank=i+1;last=r.attended;}r.rank=rank;});
+  return {rows,completedWeeks:completed.length};
+}
+function renderPride() {
+  if(!el.prideList)return;
+  const {rows,completedWeeks}=prideStats();
+  if(el.prideSummary)el.prideSummary.textContent=completedWeeks?`${completedWeeks} completed training week${completedWeeks===1?'':'s'} counted`:'Starts counting after the first completed training';
+  if(!rows.length){el.prideList.innerHTML='<div class="pride-empty">No players configured yet.</div>';return;}
+  const badge=rank=>rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'⭐';
+  el.prideList.innerHTML=rows.map(r=>`<div class="pride-row"><span class="pride-rank" aria-label="Rank ${r.rank}">${badge(r.rank)}</span><span class="pride-name">${esc(r.name)}</span><span class="pride-count"><strong>${r.attended}</strong><small>week${r.attended===1?'':'s'}</small></span></div>`).join('');
+}
 function render() {
   if(!state)return;
   el.setupNotice.hidden=true; el.teamName.textContent=staticConfig.teamName;
   const visible=Math.max(1,Number(staticConfig.weeksVisible||2)),slice=state.weeks.slice(groupStart,groupStart+visible);
   el.weeksBoard.innerHTML=slice.length?slice.map(renderWeek).join(''):'<div class="week-card"><div class="empty-week">No weeks available.</div></div>';
-  el.rangeLabel.textContent=slice.length?`Weeks ${slice[0].iso_week}–${slice.at(-1).iso_week}`:'No weeks';
-  el.prevWeeksBtn.disabled=groupStart<=0; el.nextWeeksBtn.disabled=groupStart+visible>=state.weeks.length;
+  el.rangeLabel.textContent=!slice.length?'No weeks':slice.length===1?`Week ${slice[0].iso_week}`:`Weeks ${slice[0].iso_week}–${slice.at(-1).iso_week}`;
+  el.prevWeeksBtn.disabled=groupStart<=planningFloor; el.nextWeeksBtn.disabled=groupStart+visible>=state.weeks.length;
+  renderPride();
 }
 async function setVote(playerId,sessionId,response) {
   mutationsInFlight++;
@@ -215,8 +259,14 @@ async function reloadState(force=false) {
   if(!db||!token||refreshInFlight||mutationsInFlight)return;
   refreshInFlight=true;
   try {
+    const oldGroup=groupStart,oldFloor=planningFloor,wasAtFloor=oldGroup===oldFloor;
     const next=await fetchState(); state=next; applyStaticConfig(); const fp=fingerprint(state);
-    if(force||fp!==lastFingerprint){lastFingerprint=fp;render();}
+    if(force||fp!==lastFingerprint){
+      lastFingerprint=fp;
+      chooseInitialGroup();
+      if(!wasAtFloor)groupStart=Math.max(planningFloor,Math.min(oldGroup,state.weeks.length-1));
+      render();
+    }
     setLive(true);
   } catch(e) { console.error(e); setLive(false); }
   finally { refreshInFlight=false; }
@@ -240,8 +290,8 @@ if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;el.installBtn.hidden=false;});
 el.installBtn.onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;el.installBtn.hidden=true;}else toast('Use your browser menu → Add to Home Screen / Install app.');};
 el.notifyBtn.onclick=notifications;
-el.prevWeeksBtn.onclick=()=>{groupStart=Math.max(0,groupStart-Math.max(1,Number(staticConfig.weeksVisible||2)));render();};
-el.nextWeeksBtn.onclick=()=>{groupStart=Math.min(Math.max(0,state.weeks.length-1),groupStart+Math.max(1,Number(staticConfig.weeksVisible||2)));render();};
+el.prevWeeksBtn.onclick=()=>{groupStart=Math.max(planningFloor,groupStart-Math.max(1,Number(staticConfig.weeksVisible||2)));render();};
+el.nextWeeksBtn.onclick=()=>{groupStart=Math.min(Math.max(planningFloor,state.weeks.length-1),groupStart+Math.max(1,Number(staticConfig.weeksVisible||2)));render();};
 el.weeksBoard.onclick=e=>{
   const vote=e.target.closest('[data-response]');
   if(vote){setVote(vote.dataset.playerId,vote.dataset.sessionId,vote.dataset.response);return;}
