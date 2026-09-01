@@ -3,6 +3,12 @@
 .logo-wrap{width:240px;height:240px;flex:0 0 240px;border-radius:42px}
 .team-logo{padding:0}
 
+.notify-nudge{width:min(100%,743px);margin:0 auto 14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}
+.notify-nudge[hidden]{display:none}
+.notify-nudge strong{display:block;margin-bottom:3px}
+.notify-nudge p{margin:0;color:var(--muted);font-size:.78rem;line-height:1.35}
+.notify-nudge .nav-btn{flex:0 0 auto;white-space:nowrap}
+
 /* When only one week is visible, keep the card centered and at a comfortable desktop width. */
 .weeks-board>.week-card:only-child{grid-column:1/-1;width:min(100%,743px);justify-self:center}
 
@@ -22,8 +28,8 @@
 }
 
 @media(max-width:640px){
-  html,body{max-width:100%;overflow-x:hidden}
-  .app-shell{width:100%;max-width:100%;padding-left:8px;padding-right:8px}
+  html,body{max-width:100%;overflow-x:hidden;overscroll-behavior-x:none}
+  .app-shell{width:100%;max-width:100%;padding-left:18px;padding-right:18px}
   .topbar{flex-direction:column;align-items:stretch;gap:10px;padding-top:12px}
   .brand{width:100%;gap:14px;align-items:center}
   .logo-wrap{width:170px;height:170px;flex:0 0 170px;border-radius:30px}
@@ -32,15 +38,19 @@
   h1{font-size:1.55rem;overflow-wrap:anywhere}
   .top-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}
 
-  .weeks-board,.week-card,.sheet-scroll{width:100%;max-width:100%;min-width:0}
+  .notify-nudge{width:100%;padding:11px 12px;align-items:flex-start;flex-direction:column;gap:9px}
+  .notify-nudge .nav-btn{width:100%}
+
+  .weeks-board,.week-card,.sheet-scroll{width:100%;max-width:100%;min-width:0;touch-action:pan-y}
   .weeks-board>.week-card:only-child{width:100%}
   .legend-card{width:100%}
   .sheet-scroll{overflow-x:visible}
-  .attendance-table{width:100%;min-width:0!important;max-width:100%;table-layout:fixed}
+  .attendance-table{width:100%;min-width:0!important;max-width:100%;table-layout:fixed;touch-action:pan-y}
   .attendance-table th,.attendance-table td{padding:6px 4px;min-width:0}
   .attendance-table th:first-child,.attendance-table td:first-child{width:27%}
   .attendance-table th:nth-child(2),.attendance-table td:nth-child(2),
   .attendance-table th:nth-child(3),.attendance-table td:nth-child(3){width:36.5%}
+  .attendance-table th:nth-child(3),.attendance-table td:nth-child(3){padding-right:8px}
   .day-statuses{grid-template-columns:calc(27% - 6px) calc(36.5% - 6px) 36.5%;column-gap:6px}
   .attendance-table th{font-size:.64rem;word-break:normal;overflow-wrap:anywhere}
   .player-name{max-width:none;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-size:.78rem;line-height:1.15}
@@ -56,13 +66,14 @@
 }
 
 @media(max-width:390px){
-  .app-shell{padding-left:6px;padding-right:6px}
+  .app-shell{padding-left:16px;padding-right:16px}
   .logo-wrap{width:156px;height:156px;flex-basis:156px;border-radius:28px}
   h1{font-size:1.35rem}
   .attendance-table th,.attendance-table td{padding:5px 3px}
   .attendance-table th:first-child,.attendance-table td:first-child{width:25%}
   .attendance-table th:nth-child(2),.attendance-table td:nth-child(2),
   .attendance-table th:nth-child(3),.attendance-table td:nth-child(3){width:37.5%}
+  .attendance-table th:nth-child(3),.attendance-table td:nth-child(3){padding-right:7px}
   .day-statuses{grid-template-columns:calc(25% - 6px) calc(37.5% - 6px) 37.5%;column-gap:6px}
   .player-name{font-size:.73rem}
   .vote-btn,.guest-btn{height:30px;font-size:.82rem}
