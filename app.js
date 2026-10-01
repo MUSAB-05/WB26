@@ -272,6 +272,19 @@ async function reloadState(force=false) {
   finally { refreshInFlight=false; }
 }
 function b64(s) { const p='='.repeat((4-s.length%4)%4),x=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from([...x].map(c=>c.charCodeAt(0))); }
+async function syncExistingNotifications() {
+  if(!db||!token||!('serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window))return;
+  if(Notification.permission!=='granted')return;
+  try {
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    if(!sub)return;
+    const {error}=await db.rpc('save_push_subscription',{p_token:token,p_subscription:sub.toJSON()});
+    if(error)throw error;
+    el.notifyBtn.textContent='🔔✓';
+  } catch(e) { console.warn('Could not refresh push subscription:',e); }
+}
+
 async function notifications() {
   if(!('serviceWorker'in navigator&&'PushManager'in window))return toast('Push notifications are not supported here.');
   if(!cfg.VAPID_PUBLIC_KEY)return toast('Notifications are not configured.');
@@ -286,7 +299,7 @@ async function notifications() {
   } catch(e) { toast(e.message||'Could not enable notifications'); }
 }
 
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(console.error);
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').then(()=>syncExistingNotifications()).catch(console.error);
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;el.installBtn.hidden=false;});
 el.installBtn.onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;el.installBtn.hidden=true;}else toast('Use your browser menu → Add to Home Screen / Install app.');};
 el.notifyBtn.onclick=notifications;
