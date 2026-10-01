@@ -61,7 +61,9 @@
       }
       if(name==='save_push_subscription'){
         const id=localStorage.getItem('wb-push-device')||(crypto.randomUUID?crypto.randomUUID():String(Date.now()));localStorage.setItem('wb-push-device',id);
-        await request(token,'subscriptions',{method:'PATCH',body:{devices:{[id]:args.p_subscription}}});return{data:true,error:null};
+        const current=await optionalRequest(token,'subscriptions');
+        const devices={...(current?.devices||{}),[id]:args.p_subscription};
+        await request(token,'subscriptions',{method:'PATCH',body:{devices}});return{data:true,error:null};
       }
       throw new Error(`Unsupported operation: ${name}`);
     }catch(e){return{data:null,error:e instanceof Error?e:new Error(String(e))};}
